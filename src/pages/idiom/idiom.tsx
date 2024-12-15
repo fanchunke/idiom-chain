@@ -39,7 +39,7 @@ export default function Index() {
     const initializeService = async () => {
       try {
         await idiomService.initialize(
-          "https://gcore.jsdelivr.net/gh/fanchunke/idiom-chain/assets/idioms.csv"
+          "https://gcore.jsdelivr.net/gh/fanchunke/idiom-chain/assets/idioms.csv.gz"
         );
         setIsLoading(false);
       } catch (error) {
