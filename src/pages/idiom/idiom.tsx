@@ -7,8 +7,9 @@ import {
   Divider,
   Tag,
   Collapse,
-  Skeleton,
   ConfigProvider,
+  Loading,
+  Overlay,
 } from "@nutui/nutui-react-taro";
 import { idiomService } from "../../services/idiomService";
 import "./idiom.scss";
@@ -38,7 +39,7 @@ export default function Index() {
     const initializeService = async () => {
       try {
         await idiomService.initialize(
-          "https://cdn.jsdelivr.net/gh/fanchunke/idiom-chain/assets/idioms.csv"
+          "https://gcore.jsdelivr.net/gh/fanchunke/idiom-chain/assets/idioms.csv"
         );
         setIsLoading(false);
       } catch (error) {
@@ -101,104 +102,134 @@ export default function Index() {
     setShowToast(true);
   };
 
+  const WrapperStyle = {
+    display: "flex",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  const contentStyle = {
+    display: "flex",
+    width: "150px",
+    height: "150px",
+    background: "#fff",
+    borderRadius: "8px",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "red",
+  };
+
+  if (isLoading) {
+    return (
+      <ConfigProvider>
+        <Overlay
+          visible={isLoading}
+          style={{ backgroundColor: "rgba(0, 0, 0, .4)" }}
+        >
+          <div style={WrapperStyle}>
+            <Loading direction="vertical" style={contentStyle}>
+              加载中
+            </Loading>
+          </div>
+        </Overlay>
+      </ConfigProvider>
+    );
+  }
+
   return (
-    <ConfigProvider>
-      <Skeleton title animated avatar visible={!isLoading}>
-        <View className="index">
-          <View className="search-box section">
-            <View className="input-wrapper">
-              <Input
-                className="search-input"
-                placeholder="请输入成语"
-                value={inputValue}
-                onChange={(value) => setInputValue(value)}
-              />
-              <Button
-                type="primary"
-                className="submit-button"
-                onClick={handleSubmit}
-              >
-                提交
-              </Button>
-            </View>
-            {suggestions.length > 0 && (
-              <View className="suggestions-container">
-                <View className="suggestions">
-                  {suggestions.map((idiom, index) => (
-                    <View
-                      key={index}
-                      className="suggestion-item"
-                      onClick={() => handleSuggestionClick(idiom)}
-                    >
-                      <Text className="suggestion-word">{idiom.word}</Text>
-                      <Text className="suggestion-pinyin">{idiom.pinyin}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
+    <ConfigProvider theme={{ nutuiLoadingIconColor: "#fa2c19" }}>
+      <View className="index">
+        <View className="search-box section">
+          <View className="input-wrapper">
+            <Input
+              className="search-input"
+              placeholder="请输入成语"
+              value={inputValue}
+              onChange={(value) => setInputValue(value)}
+            />
+            <Button
+              type="primary"
+              className="submit-button"
+              onClick={handleSubmit}
+            >
+              提交
+            </Button>
           </View>
-
-          {currentIdiom && (
-            <View className="idiom-display section">
-              <View className="current-idiom">
-                <Text className="idiom-word">{currentIdiom.word}</Text>
-                <Text className="idiom-pinyin">{currentIdiom.pinyin}</Text>
-              </View>
-              <Collapse
-                defaultActiveName={["1", "2"]}
-                expandIcon={<ArrowDown />}
-              >
-                <Collapse.Item title="释义" name="1" className="collapse-item">
-                  <Text>{currentIdiom.explanation}</Text>
-                </Collapse.Item>
-                <Collapse.Item title="出处" name="2" className="collapse-item">
-                  <Text>{currentIdiom.derivation}</Text>
-                </Collapse.Item>
-              </Collapse>
-            </View>
-          )}
-
-          {nextIdioms.length > 0 && (
-            <View className="next-idioms section">
-              <Divider>可接龙成语</Divider>
-              <View className="idiom-children">
-                {nextIdioms.map((idiom, index) => (
+          {suggestions.length > 0 && (
+            <View className="suggestions-container">
+              <View className="suggestions">
+                {suggestions.map((idiom, index) => (
                   <View
                     key={index}
-                    className="idiom-child"
-                    onClick={() => handleChildClick(idiom.word)}
+                    className="suggestion-item"
+                    onClick={() => handleSuggestionClick(idiom)}
                   >
-                    {idiom.word}
+                    <Text className="suggestion-word">{idiom.word}</Text>
+                    <Text className="suggestion-pinyin">{idiom.pinyin}</Text>
                   </View>
                 ))}
               </View>
             </View>
           )}
+        </View>
 
-          <View className="history section">
-            <Divider>历史记录</Divider>
-            <View className="history-list">
-              {history.map((word, index) => (
-                <Tag
+        {currentIdiom && (
+          <View className="idiom-display section">
+            <View className="current-idiom">
+              <Text className="idiom-word">{currentIdiom.word}</Text>
+              <Text className="idiom-pinyin">{currentIdiom.pinyin}</Text>
+            </View>
+            <Collapse defaultActiveName={["1", "2"]} expandIcon={<ArrowDown />}>
+              <Collapse.Item title="释义" name="1" className="collapse-item">
+                <Text>{currentIdiom.explanation}</Text>
+              </Collapse.Item>
+              <Collapse.Item title="出处" name="2" className="collapse-item">
+                <Text>{currentIdiom.derivation}</Text>
+              </Collapse.Item>
+            </Collapse>
+          </View>
+        )}
+
+        {nextIdioms.length > 0 && (
+          <View className="next-idioms section">
+            <Divider>可接龙成语</Divider>
+            <View className="idiom-children">
+              {nextIdioms.map((idiom, index) => (
+                <View
                   key={index}
-                  className="history-item"
-                  onClick={() => setInputValue(word)}
+                  className="idiom-child"
+                  onClick={() => handleChildClick(idiom.word)}
                 >
-                  {word}
-                </Tag>
+                  {idiom.word}
+                </View>
               ))}
             </View>
           </View>
+        )}
 
-          <Toast
-            msg={toastMsg}
-            visible={showToast}
-            type="text"
-            onClose={() => setShowToast(false)}
-          />
+        <View className="history section">
+          <Divider>历史记录</Divider>
+          <View className="history-list">
+            {history.map((word, index) => (
+              <Tag
+                key={index}
+                className="history-item"
+                onClick={() => setInputValue(word)}
+              >
+                {word}
+              </Tag>
+            ))}
+          </View>
         </View>
-      </Skeleton>
+
+        <Toast
+          msg={toastMsg}
+          visible={showToast}
+          type="text"
+          onClose={() => setShowToast(false)}
+        />
+      </View>
     </ConfigProvider>
   );
 }
