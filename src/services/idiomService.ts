@@ -1,6 +1,4 @@
-import Taro from "@tarojs/taro";
-import pako from "pako";
-
+import unpack from "mini-program-unpack";
 interface Idiom {
   derivation: string;
   explanation: string;
@@ -16,25 +14,18 @@ class IdiomService {
   private lastCharMap: Map<string, Idiom[]> = new Map();
   private lastPinyinCharMap: Map<string, Idiom[]> = new Map();
 
-  async initialize(csvUrl: string): Promise<void> {
+  async initialize(brFilePath: string): Promise<void> {
     try {
-      const response = await Taro.request({
-        url: csvUrl,
-        responseType: "arraybuffer",
-      });
-      if (response.statusCode === 200) {
-        const arrayBuffer = response.data; // 获取文件内容的 ArrayBuffer
-
-        // 使用 pako 解压 gzip 文件
-        const decompressedData = pako.inflate(new Uint8Array(arrayBuffer), {
-          to: "string",
+      unpack(brFilePath)
+        .then((pkg) => {
+          const text = pkg.read("idioms.csv");
+          this.parseCSV(text as string);
+          this.buildMaps();
+        })
+        .catch((err) => {
+          console.log(`unpack error: ${err}`);
+          throw err;
         });
-
-        this.parseCSV(decompressedData);
-        this.buildMaps();
-      } else {
-        throw new Error(`初始化失败`);
-      }
     } catch (error) {
       console.error("Failed to initialize IdiomService:", error);
       throw error;

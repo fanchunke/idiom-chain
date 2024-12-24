@@ -50,6 +50,14 @@ export default defineConfig<"webpack5">(async (merge, { command, mode }) => {
       },
       webpackChain(chain) {
         chain.resolve.plugin("tsconfig-paths").use(TsconfigPathsPlugin);
+        chain.module
+          .rule("assets")
+          .test(/\.(png|jpe?g|gif|svg|woff2?|eot|ttf|otf|br)$/)
+          .use("file-loader")
+          .loader("file-loader")
+          .options({
+            name: "pages/idiom/assets/[name].[hash:8].[ext]",
+          });
       },
     },
     h5: {

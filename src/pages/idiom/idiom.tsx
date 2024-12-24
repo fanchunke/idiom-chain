@@ -15,6 +15,8 @@ import { idiomService } from "../../services/idiomService";
 import "./idiom.scss";
 import { ArrowDown } from "@nutui/icons-react-taro";
 
+export const brFilePath = require("./assets/idioms.wasm.br").default;
+
 interface Idiom {
   derivation: string;
   explanation: string;
@@ -38,9 +40,7 @@ export default function Index() {
   useEffect(() => {
     const initializeService = async () => {
       try {
-        await idiomService.initialize(
-          "https://oss.fanchunke.work/idioms.csv.gz"
-        );
+        await idiomService.initialize(brFilePath);
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to initialize idiom service:", error);
